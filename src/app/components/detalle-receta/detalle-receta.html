@@ -1,1 +1,89 @@
-<p>detalle-receta works!</p>
+<div class="detalle-container" *ngIf="recipe">
+  <!-- Tarjeta de cabecera con la imagen de fondo / detalle -->
+  <div class="detalle-header">
+    <button class="btn-volver" (click)="goBack()">
+      ← Volver al inicio
+    </button>
+    <div class="header-content-wrapper">
+      <div class="imagen-container">
+        <img *ngIf="recipe.imageUrl" [src]="recipe.imageUrl" [alt]="recipe.name" class="recipe-img" />
+        <div *ngIf="!recipe.imageUrl" class="placeholder-img-large">🍳</div>
+      </div>
+      <div class="titulo-meta-container">
+        <span class="recipe-category">{{ recipe.category }}</span>
+        <h2 class="recipe-title">{{ recipe.name }}</h2>
+        <p class="recipe-description">{{ recipe.description }}</p>
+        
+        <div class="meta-tags-wrapper">
+          <div class="meta-item">
+            <span class="meta-icon">⏱️</span>
+            <div class="meta-text">
+              <span class="meta-label">Tiempo</span>
+              <span class="meta-val">{{ recipe.prepTime }} min</span>
+            </div>
+          </div>
+          
+          <div class="meta-item">
+            <span class="meta-icon">🍽️</span>
+            <div class="meta-text">
+              <span class="meta-label">Porciones</span>
+              <span class="meta-val">{{ recipe.portions }} porciones</span>
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-icon">⚡</span>
+            <div class="meta-text">
+              <span class="meta-label">Dificultad</span>
+              <span class="meta-val highlight-diff">{{ recipe.difficulty }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal: Ingredientes y Pasos -->
+  <div class="detalle-content">
+    <div class="seccion-ingredientes">
+      <h3>📋 Ingredientes</h3>
+      <ul class="ingredientes-lista">
+        <li *ngFor="let ing of recipe.ingredients" class="ingrediente-item">
+          <span class="check-bullet">✓</span> {{ ing }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="seccion-pasos">
+      <h3>🍳 Pasos de preparación</h3>
+      <ol class="pasos-lista">
+        <li *ngFor="let paso of recipe.steps; let i = index" class="paso-item">
+          <div class="paso-num">{{ i + 1 }}</div>
+          <div class="paso-text">{{ paso }}</div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Barra de acciones inferior -->
+  <div class="detalle-acciones">
+    <button class="btn-accion btn-favorito" [class.activo]="recipe.isFavorite" (click)="toggleFavorite()">
+      {{ recipe.isFavorite ? '⭐ Quitar de favoritos' : '☆ Marcar como favorita' }}
+    </button>
+    <button class="btn-accion btn-editar" [routerLink]="['/editar', recipe.id]">
+      ✏️ Editar receta
+    </button>
+    <button class="btn-accion btn-eliminar" (click)="deleteRecipe()">
+      🗑️ Eliminar receta
+    </button>
+  </div>
+</div>
+
+<div class="no-recipe-container" *ngIf="!recipe">
+  <div class="error-card">
+    <span class="error-icon">🔍</span>
+    <h2>Receta no encontrada</h2>
+    <p>La receta que buscas no existe o ha sido eliminada.</p>
+    <button class="btn-volver-error" (click)="goBack()">Volver al inicio</button>
+  </div>
+</div>
