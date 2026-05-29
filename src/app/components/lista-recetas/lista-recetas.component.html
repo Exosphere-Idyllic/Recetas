@@ -1,0 +1,58 @@
+<div class="lista-container">
+
+  <div class="lista-header">
+    <h2 class="lista-titulo">📋 Mis Recetas</h2>
+    <div class="buscador-wrapper">
+      <span class="icono-buscar">🔍</span>
+      <input
+        type="text"
+        class="buscador"
+        placeholder="Buscar receta..."
+        (input)="buscarReceta($event)"
+      />
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="recetasFiltradas.length === 0">
+    <span class="empty-icon">🍽️</span>
+    <p>No se encontraron recetas.</p>
+  </div>
+
+  <div class="recetas-grid" *ngIf="recetasFiltradas.length > 0">
+    <div class="receta-card" *ngFor="let receta of recetasFiltradas">
+
+      <div class="badge-favorito" *ngIf="receta.isFavorite">⭐ Favorita</div>
+
+      <div class="receta-imagen">
+        <img *ngIf="receta.imageUrl" [src]="receta.imageUrl" [alt]="receta.name" />
+        <span *ngIf="!receta.imageUrl" class="placeholder-img">🍲</span>
+      </div>
+
+      <div class="receta-info">
+        <h3 class="receta-nombre">{{ receta.name }}</h3>
+        <p class="receta-descripcion" *ngIf="receta.description">
+          {{ receta.description }}
+        </p>
+        <div class="receta-meta">
+          <span class="meta-tag" *ngIf="receta.category">
+            🏷️ {{ receta.category }}
+          </span>
+          <span class="meta-tag" *ngIf="receta.prepTime">
+            ⏱️ {{ receta.prepTime }} min
+          </span>
+        </div>
+      </div>
+
+      <div class="receta-acciones">
+        <button class="btn-ver" (click)="verDetalle(receta.id)">👁️ Ver</button>
+        <button class="btn-editar" (click)="editarReceta(receta.id)">✏️ Editar</button>
+        <button class="btn-fav" [class.activo]="receta.isFavorite" (click)="toggleFavorito(receta)">
+          {{ receta.isFavorite ? '💛' : '🤍' }}
+        </button>
+        <button class="btn-eliminar" (click)="eliminarReceta(receta.id)">🗑️</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
