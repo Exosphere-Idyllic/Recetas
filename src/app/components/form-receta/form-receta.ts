@@ -46,7 +46,7 @@ export class FormReceta implements OnInit {
     'Snack'
   ];
 
-  // Lista de URLs de imágenes predeterminadas bonitas si no quieren pegar una URL
+  // Lista de URLs de imágenes predeterminadas
   presetImages = [
     { name: 'Ensalada Fresca', url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80' },
     { name: 'Pasta Italiana', url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
@@ -59,7 +59,7 @@ export class FormReceta implements OnInit {
     private recipeService: RecipeService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Detectamos si la ruta tiene un parámetro 'id' (Modo Edición)
@@ -96,7 +96,7 @@ export class FormReceta implements OnInit {
     if (event) {
       event.preventDefault(); // Evitamos que envíe el formulario si se presiona enter
     }
-    
+
     const ingredient = this.newIngredient.trim();
     if (ingredient) {
       this.recipe.ingredients.push(ingredient);
@@ -159,7 +159,7 @@ export class FormReceta implements OnInit {
       } else {
         this.recipeService.addRecipe(this.recipe);
       }
-      
+
       // Limpiamos o redirigimos al inicio
       this.router.navigate(['/inicio']);
     }
