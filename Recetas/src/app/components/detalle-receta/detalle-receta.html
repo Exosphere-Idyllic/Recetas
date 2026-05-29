@@ -1,0 +1,18 @@
+<div *ngIf="receta">
+  <h2>{{ receta.nombre }}</h2>
+
+  <h3>Ingredientes</h3>
+  <ul>
+    <li *ngFor="let ing of receta.ingredientes">{{ ing }}</li>
+  </ul>
+
+  <h3>Pasos de preparación</h3>
+  <ol>
+    <li *ngFor="let paso of receta.pasos">{{ paso }}</li>
+  </ol>
+
+  <button (click)="marcarFavorita()">
+    { receta.favorita ?}
+  </button>
+</div>
+
