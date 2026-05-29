@@ -1,1 +1,322 @@
-<p>form-receta works!</p>
+<div class="form-page-layout">
+  <!-- Columna del Formulario -->
+  <div class="form-container-card">
+    <div class="form-header">
+      <h2 class="form-title">{{ isEditMode ? 'Editar Receta' : 'Nueva Receta' }}</h2>
+      <p class="form-subtitle">Completa los campos para crear una obra de arte culinaria</p>
+    </div>
+
+    <!-- Mensajes de Error de Validación Generales -->
+    <div class="validation-banner" *ngIf="showErrors && !isFormValid()">
+      <span class="warning-icon">⚠️</span>
+      <div class="banner-text">
+        <strong>Por favor corrige los errores:</strong>
+        <ul>
+          <li *ngIf="!recipe.name.trim()">El nombre de la receta es obligatorio.</li>
+          <li *ngIf="!recipe.description.trim()">La descripción es obligatoria.</li>
+          <li *ngIf="recipe.prepTime <= 0">El tiempo de preparación debe ser mayor a 0 min.</li>
+          <li *ngIf="recipe.portions <= 0">Las porciones deben ser mayores a 0.</li>
+          <li *ngIf="recipe.ingredients.length === 0">Debes añadir al menos 1 ingrediente.</li>
+          <li *ngIf="recipe.steps.length === 0">Debes añadir al menos 1 paso de preparación.</li>
+        </ul>
+      </div>
+    </div>
+
+    <form (submit)="onSubmit()" #recetaForm="ngForm" class="recipe-form">
+      
+      <!-- Nombre de la Receta -->
+      <div class="form-group">
+        <label for="recipe-name" class="form-label">Nombre de la Receta *</label>
+        <input 
+          type="text" 
+          id="recipe-name" 
+          name="name" 
+          class="form-control"
+          placeholder="Ej. Tacos al Pastor, Pizza Margarita..."
+          [(ngModel)]="recipe.name" 
+          required 
+          #nameModel="ngModel">
+        <div class="field-error" *ngIf="showErrors && nameModel.invalid">
+          El nombre de la receta es requerido.
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group">
+        <label for="recipe-desc" class="form-label">Descripción Breve *</label>
+        <textarea 
+          id="recipe-desc" 
+          name="description" 
+          class="form-control text-area" 
+          placeholder="Escribe una pequeña reseña o historia sobre tu receta..."
+          [(ngModel)]="recipe.description" 
+          required
+          rows="3"
+          #descModel="ngModel"></textarea>
+        <div class="field-error" *ngIf="showErrors && descModel.invalid">
+          La descripción es requerida.
+        </div>
+      </div>
+
+      <!-- Fila de Categoría, Dificultad, Tiempo y Porciones -->
+      <div class="form-row-grid">
+        <!-- Categoría -->
+        <div class="form-group">
+          <label for="recipe-category" class="form-label">Categoría</label>
+          <select id="recipe-category" name="category" class="form-control select-control" [(ngModel)]="recipe.category">
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+        <!-- Dificultad -->
+        <div class="form-group">
+          <label class="form-label">Dificultad</label>
+          <div class="difficulty-options">
+            <label class="diff-radio" [class.selected]="recipe.difficulty === 'Fácil'">
+              <input type="radio" name="difficulty" value="Fácil" [(ngModel)]="recipe.difficulty"> Fácil
+            </label>
+            <label class="diff-radio" [class.selected]="recipe.difficulty === 'Medio'">
+              <input type="radio" name="difficulty" value="Medio" [(ngModel)]="recipe.difficulty"> Medio
+            </label>
+            <label class="diff-radio" [class.selected]="recipe.difficulty === 'Difícil'">
+              <input type="radio" name="difficulty" value="Difícil" [(ngModel)]="recipe.difficulty"> Difícil
+            </label>
+          </div>
+        </div>
+
+        <!-- Tiempo de Preparación -->
+        <div class="form-group">
+          <label for="recipe-preptime" class="form-label">Tiempo (min) *</label>
+          <input 
+            type="number" 
+            id="recipe-preptime" 
+            name="prepTime" 
+            class="form-control" 
+            min="1" 
+            [(ngModel)]="recipe.prepTime"
+            required
+            #timeModel="ngModel">
+          <div class="field-error" *ngIf="showErrors && (timeModel.invalid || recipe.prepTime <= 0)">
+            Debe ser > 0.
+          </div>
+        </div>
+
+        <!-- Porciones -->
+        <div class="form-group">
+          <label for="recipe-portions" class="form-label">Porciones *</label>
+          <input 
+            type="number" 
+            id="recipe-portions" 
+            name="portions" 
+            class="form-control" 
+            min="1" 
+            [(ngModel)]="recipe.portions"
+            required
+            #portionsModel="ngModel">
+          <div class="field-error" *ngIf="showErrors && (portionsModel.invalid || recipe.portions <= 0)">
+            Debe ser > 0.
+          </div>
+        </div>
+      </div>
+
+      <!-- URL de la Imagen y Galería Preestablecida -->
+      <div class="form-group">
+        <label for="recipe-img" class="form-label">URL de Imagen (Opcional)</label>
+        <input 
+          type="url" 
+          id="recipe-img" 
+          name="imageUrl" 
+          class="form-control" 
+          placeholder="https://ejemplo.com/imagen.jpg" 
+          [(ngModel)]="recipe.imageUrl">
+        
+        <span class="gallery-hint">O elige una imagen preestablecida:</span>
+        <div class="presets-gallery">
+          <div 
+            class="preset-thumb" 
+            *ngFor="let img of presetImages" 
+            [class.active]="recipe.imageUrl === img.url"
+            (click)="selectPresetImage(img.url)"
+            [title]="img.name">
+            <img [src]="img.url" [alt]="img.name">
+            <div class="preset-overlay">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingredientes Dinámicos (Directivas y Eventos) -->
+      <div class="form-group array-section">
+        <label class="form-label">Ingredientes *</label>
+        <div class="input-append-group">
+          <input 
+            type="text" 
+            name="newIngredientInput"
+            class="form-control" 
+            placeholder="Añadir ingrediente (Ej: 2 tazas de leche)" 
+            [(ngModel)]="newIngredient"
+            (keydown.enter)="addIngredient($event)">
+          <button type="button" class="btn btn-secondary" (click)="addIngredient($event)">
+            Agregar
+          </button>
+        </div>
+        
+        <!-- Lista de Ingredientes Agregados -->
+        <div class="pills-container" *ngIf="recipe.ingredients.length > 0">
+          <span class="ingredient-pill" *ngFor="let ing of recipe.ingredients; let i = index">
+            {{ ing }}
+            <button type="button" class="btn-remove-pill" (click)="removeIngredient(i)" title="Eliminar">&times;</button>
+          </span>
+        </div>
+        <p class="empty-array-text" *ngIf="recipe.ingredients.length === 0">
+          Aún no has agregado ningún ingrediente. Introduce uno arriba.
+        </p>
+      </div>
+
+      <!-- Pasos de Preparación Dinámicos (Directivas y Eventos) -->
+      <div class="form-group array-section">
+        <label class="form-label">Pasos de Preparación *</label>
+        <div class="input-append-group-vertical">
+          <textarea 
+            name="newStepInput"
+            class="form-control text-area" 
+            placeholder="Añadir paso paso (Ej: Cocinar a fuego lento durante 10 minutos)..." 
+            [(ngModel)]="newStep"
+            rows="2"></textarea>
+          <button type="button" class="btn btn-secondary btn-step-add" (click)="addStep($event)">
+            Agregar Paso
+          </button>
+        </div>
+
+        <!-- Lista Ordenada de Pasos -->
+        <div class="steps-list" *ngIf="recipe.steps.length > 0">
+          <div class="step-item-row" *ngFor="let step of recipe.steps; let i = index">
+            <div class="step-badge-number">{{ i + 1 }}</div>
+            <div class="step-text">{{ step }}</div>
+            <button type="button" class="btn-remove-step" (click)="removeStep(i)" title="Eliminar paso">Eliminar</button>
+          </div>
+        </div>
+        <p class="empty-array-text" *ngIf="recipe.steps.length === 0">
+          Aún no has agregado ningún paso de preparación. Introduce uno arriba.
+        </p>
+      </div>
+
+      <!-- Botón Favorito Formulario -->
+      <div class="form-group fav-checkbox-group">
+        <button 
+          type="button" 
+          class="btn btn-fav-toggle" 
+          [class.is-favorite]="recipe.isFavorite"
+          (click)="toggleFavoriteForm()">
+          <span class="heart-icon">{{ recipe.isFavorite ? '❤️' : '🤍' }}</span>
+          {{ recipe.isFavorite ? 'Receta Favorita' : 'Marcar como Favorita' }}
+        </button>
+      </div>
+
+      <!-- Acciones de Formulario -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" (click)="cancel()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-submit">
+          {{ isEditMode ? 'Guardar Cambios' : 'Guardar Receta' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Columna de la Vista Previa (Live Preview Card) -->
+  <div class="preview-container">
+    <div class="sticky-preview-wrapper">
+      <h3 class="preview-header-title">Vista Previa en Tiempo Real</h3>
+      
+      <div class="recipe-card-preview">
+        <!-- Imagen y Cabecera de Tarjeta -->
+        <div class="card-image-wrapper">
+          <img 
+            *ngIf="recipe.imageUrl; else noImage" 
+            [src]="recipe.imageUrl" 
+            [alt]="recipe.name || 'Vista previa'" 
+            class="card-img">
+          
+          <ng-template #noImage>
+            <div class="card-no-image">
+              <svg class="dish-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-dasharray="3 3" stroke-width="2"/>
+                <path d="M6 12H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M10 9L12 12L14 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="15" r="1.5" fill="currentColor"/>
+              </svg>
+              <span>Sin imagen (se usará predeterminado)</span>
+            </div>
+          </ng-template>
+
+          <!-- Badges de Categoría y Dificultad -->
+          <div class="card-badges">
+            <span class="badge badge-category">{{ recipe.category }}</span>
+            <span class="badge badge-difficulty" [ngClass]="{
+              'diff-facil': recipe.difficulty === 'Fácil',
+              'diff-medio': recipe.difficulty === 'Medio',
+              'diff-dificil': recipe.difficulty === 'Difícil'
+            }">{{ recipe.difficulty }}</span>
+          </div>
+
+          <!-- Botón de Favorito Flotante -->
+          <button 
+            type="button" 
+            class="favorite-floating-btn" 
+            [class.active]="recipe.isFavorite"
+            (click)="toggleFavoriteForm()"
+            title="Marcar como favorita">
+            <svg class="heart-svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido de la Tarjeta -->
+        <div class="card-body">
+          <h4 class="card-title">{{ recipe.name || 'Título de tu Receta' }}</h4>
+          <p class="card-desc">{{ recipe.description || 'Escribe una descripción corta para ver cómo encaja en la tarjeta.' }}</p>
+          
+          <!-- Metadatos Rápidos -->
+          <div class="card-meta">
+            <div class="meta-item">
+              <span class="meta-icon">⏱️</span>
+              <span class="meta-text">{{ recipe.prepTime }} min</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🍽️</span>
+              <span class="meta-text">{{ recipe.portions }} {{ recipe.portions === 1 ? 'porción' : 'porciones' }}</span>
+            </div>
+          </div>
+
+          <!-- Vista Previa de Ingredientes -->
+          <div class="preview-section-title" *ngIf="recipe.ingredients.length > 0">
+            Ingredientes ({{ recipe.ingredients.length }})
+          </div>
+          <ul class="preview-ingredients-list" *ngIf="recipe.ingredients.length > 0">
+            <li *ngFor="let ing of recipe.ingredients.slice(0, 3)">
+              <span class="check-bullet">✓</span> {{ ing }}
+            </li>
+            <li class="more-items" *ngIf="recipe.ingredients.length > 3">
+              Y {{ recipe.ingredients.length - 3 }} ingrediente(s) más...
+            </li>
+          </ul>
+
+          <!-- Vista Previa de Pasos -->
+          <div class="preview-section-title" *ngIf="recipe.steps.length > 0">
+            Pasos de preparación ({{ recipe.steps.length }})
+          </div>
+          <ol class="preview-steps-list" *ngIf="recipe.steps.length > 0">
+            <li *ngFor="let step of recipe.steps.slice(0, 2); let idx = index">
+              <span class="num-bullet">{{ idx + 1 }}.</span> {{ step }}
+            </li>
+            <li class="more-items" *ngIf="recipe.steps.length > 2">
+              Y {{ recipe.steps.length - 2 }} paso(s) más...
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,14 @@
 import { Routes } from '@angular/router';
+import { ListaRecetas } from './components/lista-recetas/lista-recetas';
+import { FormReceta } from './components/form-receta/form-receta';
+import { DetalleReceta } from './components/detalle-receta/detalle-receta';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', redirectTo: 'agregar', pathMatch: 'full' },
+  { path: 'inicio', component: ListaRecetas },
+  { path: 'agregar', component: FormReceta },
+  { path: 'editar/:id', component: FormReceta },
+  { path: 'receta/:id', component: DetalleReceta },
+  { path: 'favoritos', component: ListaRecetas },
+  { path: '**', redirectTo: 'agregar' }
+];
