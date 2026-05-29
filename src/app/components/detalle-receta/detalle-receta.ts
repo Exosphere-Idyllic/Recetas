@@ -5,6 +5,7 @@ import { RecipeService, Recipe } from '../../services/recipe.service';
 
 @Component({
   selector: 'app-detalle-receta',
+  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './detalle-receta.html',
   styleUrl: './detalle-receta.css',
