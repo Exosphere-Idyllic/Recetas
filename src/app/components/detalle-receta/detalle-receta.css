@@ -1,0 +1,47 @@
+/* Fondo general */
+div {
+  background-color: #EAE0CF; /* beige suave */
+  padding: 20px;
+  border-radius: 10px;
+  color: #111844; /* texto principal en azul oscuro */
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Título principal */
+h2 {
+  color: #111844;
+  font-size: 24px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4B5694;
+  padding-bottom: 5px;
+}
+
+/* Subtítulos */
+h3 {
+  color: #4B5694;
+  margin-top: 15px;
+  font-size: 18px;
+}
+
+/* Listas */
+ul, ol {
+  margin-left: 20px;
+  color: #7288AE; /* azul claro para diferenciar ingredientes/pasos */
+}
+
+/* Botón de favorita */
+button {
+  margin-top: 15px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  background-color: #4B5694; /* azul medio */
+  color: #EAE0CF; /* contraste con beige */
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #111844; /* azul oscuro al pasar el mouse */
+}
