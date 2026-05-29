@@ -1,11 +1,21 @@
 <div class="lista-container">
 
+  <!-- Encabezado de la Sección -->
   <div class="lista-header">
-    <h2 class="lista-titulo">📋 Mis Recetas</h2>
+    <div class="header-title-group">
+      <h2 class="lista-titulo">{{ esFavoritos ? 'Colección de Favoritos' : 'Recetas de la Casa' }}</h2>
+      <span class="titulo-badge">{{ recetasFiltradas.length }} {{ recetasFiltradas.length === 1 ? 'receta' : 'recetas' }}</span>
+    </div>
+
+    <!-- Buscador Minimalista -->
     <div class="buscador-wrapper">
-      <span class="icono-buscar">🔍</span>
+      <svg class="icono-buscar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
       <input
         type="text"
+        id="buscador-recetas"
         class="buscador"
         placeholder="Buscar receta..."
         (input)="buscarReceta($event)"
@@ -13,43 +23,100 @@
     </div>
   </div>
 
+  <!-- Estado Vacío -->
   <div class="empty-state" *ngIf="recetasFiltradas.length === 0">
-    <span class="empty-icon">🍽️</span>
-    <p>No se encontraron recetas.</p>
+    <div class="empty-icon-wrapper">
+      <svg class="empty-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 8v4M12 16h.01"></path>
+      </svg>
+    </div>
+    <p *ngIf="!esFavoritos && terminoBusqueda">No se encontraron recetas para "{{ terminoBusqueda }}".</p>
+    <p *ngIf="!esFavoritos && !terminoBusqueda">Aún no tienes recetas creadas en tu colección.</p>
+    <p *ngIf="esFavoritos && terminoBusqueda">Ningún favorito coincide con "{{ terminoBusqueda }}".</p>
+    <p *ngIf="esFavoritos && !terminoBusqueda">Aún no tienes recetas marcadas como favoritas.</p>
+    <button class="btn-agregar-vacio" (click)="irAgregar()" *ngIf="!esFavoritos">
+      Crear primera receta
+    </button>
   </div>
 
+  <!-- Grid de Tarjetas -->
   <div class="recetas-grid" *ngIf="recetasFiltradas.length > 0">
     <div class="receta-card" *ngFor="let receta of recetasFiltradas">
 
-      <div class="badge-favorito" *ngIf="receta.isFavorite">⭐ Favorita</div>
+      <!-- Badge de Favorito Flotante -->
+      <button
+        id="btn-fav-{{ receta.id }}"
+        class="card-fav-btn"
+        [class.activo]="receta.isFavorite"
+        (click)="toggleFavorito(receta)"
+        [title]="receta.isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'"
+      >
+        <svg class="heart-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
 
-      <div class="receta-imagen">
+      <!-- Imagen o Placeholder -->
+      <div class="receta-imagen" (click)="verDetalle(receta.id)">
         <img *ngIf="receta.imageUrl" [src]="receta.imageUrl" [alt]="receta.name" />
-        <span *ngIf="!receta.imageUrl" class="placeholder-img">🍲</span>
+        <div *ngIf="!receta.imageUrl" class="placeholder-img">
+          <svg class="placeholder-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z" />
+            <path d="M12 3V2" />
+            <path d="M3 14h18" />
+            <path d="M4 14a8 8 0 0 0 16 0" />
+          </svg>
+        </div>
+        <div class="category-floating-badge">{{ receta.category }}</div>
       </div>
 
-      <div class="receta-info">
+      <!-- Contenido Informativo -->
+      <div class="receta-info" (click)="verDetalle(receta.id)">
         <h3 class="receta-nombre">{{ receta.name }}</h3>
         <p class="receta-descripcion" *ngIf="receta.description">
           {{ receta.description }}
         </p>
         <div class="receta-meta">
-          <span class="meta-tag" *ngIf="receta.category">
-            🏷️ {{ receta.category }}
+          <span class="meta-tag duration">
+            <svg class="meta-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ receta.prepTime }} min
           </span>
-          <span class="meta-tag" *ngIf="receta.prepTime">
-            ⏱️ {{ receta.prepTime }} min
+          <span class="meta-tag difficulty" [ngClass]="{
+            'diff-facil': receta.difficulty === 'Fácil',
+            'diff-medio': receta.difficulty === 'Medio',
+            'diff-dificil': receta.difficulty === 'Difícil'
+          }">
+            <span class="dot-indicator"></span>
+            {{ receta.difficulty }}
           </span>
         </div>
       </div>
 
+      <!-- Acciones de la Tarjeta -->
       <div class="receta-acciones">
-        <button class="btn-ver" (click)="verDetalle(receta.id)">👁️ Ver</button>
-        <button class="btn-editar" (click)="editarReceta(receta.id)">✏️ Editar</button>
-        <button class="btn-fav" [class.activo]="receta.isFavorite" (click)="toggleFavorito(receta)">
-          {{ receta.isFavorite ? '💛' : '🤍' }}
+        <button id="btn-ver-{{ receta.id }}" class="btn-ver" (click)="verDetalle(receta.id)">
+          Ver receta
         </button>
-        <button class="btn-eliminar" (click)="eliminarReceta(receta.id)">🗑️</button>
+        <div class="action-icons-group">
+          <button id="btn-editar-{{ receta.id }}" class="btn-icon-action btn-editar" (click)="editarReceta(receta.id)" title="Editar receta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </button>
+          <button id="btn-del-{{ receta.id }}" class="btn-icon-action btn-eliminar" (click)="eliminarReceta(receta.id)" title="Eliminar receta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+        </div>
       </div>
 
     </div>

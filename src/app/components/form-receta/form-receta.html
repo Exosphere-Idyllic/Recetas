@@ -1,24 +1,31 @@
 <div class="form-page-layout">
+  
   <!-- Columna del Formulario -->
   <div class="form-container-card">
     <div class="form-header">
       <h2 class="form-title">{{ isEditMode ? 'Editar Receta' : 'Nueva Receta' }}</h2>
-      <p class="form-subtitle">Completa los campos para crear una obra de arte culinaria</p>
+      <p class="form-subtitle">Completa los campos para añadir una joya a tu repertorio gastronómico</p>
     </div>
 
     <!-- Mensajes de Error de Validación Generales -->
     <div class="validation-banner" *ngIf="showErrors && !isFormValid()">
-      <span class="warning-icon">⚠️</span>
-      <div class="banner-text">
-        <strong>Por favor corrige los errores:</strong>
-        <ul>
-          <li *ngIf="!recipe.name.trim()">El nombre de la receta es obligatorio.</li>
-          <li *ngIf="!recipe.description.trim()">La descripción es obligatoria.</li>
-          <li *ngIf="recipe.prepTime <= 0">El tiempo de preparación debe ser mayor a 0 min.</li>
-          <li *ngIf="recipe.portions <= 0">Las porciones deben ser mayores a 0.</li>
-          <li *ngIf="recipe.ingredients.length === 0">Debes añadir al menos 1 ingrediente.</li>
-          <li *ngIf="recipe.steps.length === 0">Debes añadir al menos 1 paso de preparación.</li>
-        </ul>
+      <div class="banner-content">
+        <svg class="warning-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div class="banner-text">
+          <strong>Por favor completa los campos requeridos:</strong>
+          <ul>
+            <li *ngIf="!recipe.name.trim()">El nombre de la receta es obligatorio.</li>
+            <li *ngIf="!recipe.description.trim()">La descripción es obligatoria.</li>
+            <li *ngIf="recipe.prepTime <= 0">El tiempo de preparación debe ser mayor a 0 minutos.</li>
+            <li *ngIf="recipe.portions <= 0">Las porciones deben ser mayores a 0.</li>
+            <li *ngIf="recipe.ingredients.length === 0">Debes añadir al menos un ingrediente.</li>
+            <li *ngIf="recipe.steps.length === 0">Debes añadir al menos un paso de preparación.</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -32,12 +39,12 @@
           id="recipe-name" 
           name="name" 
           class="form-control"
-          placeholder="Ej. Tacos al Pastor, Pizza Margarita..."
+          placeholder="Ej. Salmón al Horno con Eneldo, Tiramisú Classico..."
           [(ngModel)]="recipe.name" 
           required 
           #nameModel="ngModel">
         <div class="field-error" *ngIf="showErrors && nameModel.invalid">
-          El nombre de la receta es requerido.
+          El nombre es requerido.
         </div>
       </div>
 
@@ -48,7 +55,7 @@
           id="recipe-desc" 
           name="description" 
           class="form-control text-area" 
-          placeholder="Escribe una pequeña reseña o historia sobre tu receta..."
+          placeholder="Describe brevemente el carácter de este plato, su origen o aroma..."
           [(ngModel)]="recipe.description" 
           required
           rows="3"
@@ -58,14 +65,16 @@
         </div>
       </div>
 
-      <!-- Fila de Categoría, Dificultad, Tiempo y Porciones -->
+      <!-- Fila de Datos: Categoría, Dificultad, Tiempo y Porciones -->
       <div class="form-row-grid">
         <!-- Categoría -->
         <div class="form-group">
           <label for="recipe-category" class="form-label">Categoría</label>
-          <select id="recipe-category" name="category" class="form-control select-control" [(ngModel)]="recipe.category">
-            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-          </select>
+          <div class="select-wrapper">
+            <select id="recipe-category" name="category" class="form-control select-control" [(ngModel)]="recipe.category">
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
         </div>
 
         <!-- Dificultad -->
@@ -121,7 +130,7 @@
 
       <!-- URL de la Imagen y Galería Preestablecida -->
       <div class="form-group">
-        <label for="recipe-img" class="form-label">URL de Imagen (Opcional)</label>
+        <label for="recipe-img" class="form-label">Imagen de la Receta</label>
         <input 
           type="url" 
           id="recipe-img" 
@@ -130,7 +139,7 @@
           placeholder="https://ejemplo.com/imagen.jpg" 
           [(ngModel)]="recipe.imageUrl">
         
-        <span class="gallery-hint">O elige una imagen preestablecida:</span>
+        <span class="gallery-hint">O selecciona una fotografía premium:</span>
         <div class="presets-gallery">
           <div 
             class="preset-thumb" 
@@ -139,12 +148,16 @@
             (click)="selectPresetImage(img.url)"
             [title]="img.name">
             <img [src]="img.url" [alt]="img.name">
-            <div class="preset-overlay">✓</div>
+            <div class="preset-overlay">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="check-svg" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Ingredientes Dinámicos (Directivas y Eventos) -->
+      <!-- Ingredientes Dinámicos -->
       <div class="form-group array-section">
         <label class="form-label">Ingredientes *</label>
         <div class="input-append-group">
@@ -152,11 +165,11 @@
             type="text" 
             name="newIngredientInput"
             class="form-control" 
-            placeholder="Añadir ingrediente (Ej: 2 tazas de leche)" 
+            placeholder="Añadir ingrediente (Ej: 200g de filete de salmón)" 
             [(ngModel)]="newIngredient"
             (keydown.enter)="addIngredient($event)">
-          <button type="button" class="btn btn-secondary" (click)="addIngredient($event)">
-            Agregar
+          <button type="button" class="btn btn-add" (click)="addIngredient($event)">
+            Añadir
           </button>
         </div>
         
@@ -168,22 +181,23 @@
           </span>
         </div>
         <p class="empty-array-text" *ngIf="recipe.ingredients.length === 0">
-          Aún no has agregado ningún ingrediente. Introduce uno arriba.
+          Usa la caja superior para agregar los ingredientes necesarios.
         </p>
       </div>
 
-      <!-- Pasos de Preparación Dinámicos (Directivas y Eventos) -->
+      <!-- Pasos de Preparación Dinámicos -->
       <div class="form-group array-section">
         <label class="form-label">Pasos de Preparación *</label>
         <div class="input-append-group-vertical">
           <textarea 
             name="newStepInput"
             class="form-control text-area" 
-            placeholder="Añadir paso paso (Ej: Cocinar a fuego lento durante 10 minutos)..." 
+            placeholder="Describe el paso (Ej: Precalentar el horno a 180°C y pincelar la bandeja)..." 
             [(ngModel)]="newStep"
-            rows="2"></textarea>
-          <button type="button" class="btn btn-secondary btn-step-add" (click)="addStep($event)">
-            Agregar Paso
+            rows="2"
+            (keydown.enter)="addStep($event)"></textarea>
+          <button type="button" class="btn btn-add btn-step-add" (click)="addStep($event)">
+            Añadir paso
           </button>
         </div>
 
@@ -192,11 +206,16 @@
           <div class="step-item-row" *ngFor="let step of recipe.steps; let i = index">
             <div class="step-badge-number">{{ i + 1 }}</div>
             <div class="step-text">{{ step }}</div>
-            <button type="button" class="btn-remove-step" (click)="removeStep(i)" title="Eliminar paso">Eliminar</button>
+            <button type="button" class="btn-remove-step" (click)="removeStep(i)" title="Eliminar paso">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
           </div>
         </div>
         <p class="empty-array-text" *ngIf="recipe.steps.length === 0">
-          Aún no has agregado ningún paso de preparación. Introduce uno arriba.
+          Usa la caja superior para describir los pasos de preparación secuencialmente.
         </p>
       </div>
 
@@ -214,109 +233,81 @@
 
       <!-- Acciones de Formulario -->
       <div class="form-actions">
-        <button type="button" class="btn btn-cancel" (click)="cancel()">
+        <button type="button" class="btn-cancel" (click)="cancel()">
           Cancelar
         </button>
-        <button type="submit" class="btn btn-submit">
-          {{ isEditMode ? 'Guardar Cambios' : 'Guardar Receta' }}
+        <button type="submit" class="btn-submit">
+          {{ isEditMode ? 'Guardar Cambios' : 'Crear Receta' }}
         </button>
       </div>
     </form>
   </div>
 
-  <!-- Columna de la Vista Previa (Live Preview Card) -->
+  <!-- Columna de la Vista Previa en Tiempo Real -->
   <div class="preview-container">
     <div class="sticky-preview-wrapper">
-      <h3 class="preview-header-title">Vista Previa en Tiempo Real</h3>
+      <h3 class="preview-header-title">Vista Previa</h3>
       
-      <div class="recipe-card-preview">
-        <!-- Imagen y Cabecera de Tarjeta -->
-        <div class="card-image-wrapper">
+      <!-- Tarjeta idéntica al Grid de Recetas para consistencia estética -->
+      <div class="recipe-card">
+        
+        <!-- Favorito flotante -->
+        <button 
+          type="button" 
+          class="card-fav-btn" 
+          [class.activo]="recipe.isFavorite"
+          (click)="toggleFavoriteForm()"
+          title="Marcar como favorita">
+          <svg class="heart-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </button>
+
+        <!-- Imagen / Placeholder -->
+        <div class="receta-imagen">
           <img 
             *ngIf="recipe.imageUrl; else noImage" 
             [src]="recipe.imageUrl" 
-            [alt]="recipe.name || 'Vista previa'" 
-            class="card-img">
-          
+            [alt]="recipe.name || 'Vista previa'" />
           <ng-template #noImage>
-            <div class="card-no-image">
-              <svg class="dish-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-dasharray="3 3" stroke-width="2"/>
-                <path d="M6 12H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M10 9L12 12L14 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="12" cy="15" r="1.5" fill="currentColor"/>
+            <div class="placeholder-img">
+              <svg class="placeholder-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3a6 6 0 0 0-6 6h12a6 6 0 0 0-6-6z" />
+                <path d="M12 3V2" />
+                <path d="M3 14h18" />
+                <path d="M4 14a8 8 0 0 0 16 0" />
               </svg>
-              <span>Sin imagen (se usará predeterminado)</span>
             </div>
           </ng-template>
+          <div class="category-floating-badge">{{ recipe.category }}</div>
+        </div>
 
-          <!-- Badges de Categoría y Dificultad -->
-          <div class="card-badges">
-            <span class="badge badge-category">{{ recipe.category }}</span>
-            <span class="badge badge-difficulty" [ngClass]="{
+        <!-- Info Cuerpo -->
+        <div class="receta-info">
+          <h3 class="receta-nombre">{{ recipe.name || 'Título de tu Receta' }}</h3>
+          <p class="receta-descripcion">{{ recipe.description || 'Escribe una descripción corta para ver cómo encaja en la tarjeta.' }}</p>
+          
+          <div class="receta-meta">
+            <span class="meta-tag duration">
+              <svg class="meta-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              {{ recipe.prepTime }} min
+            </span>
+            <span class="meta-tag difficulty" [ngClass]="{
               'diff-facil': recipe.difficulty === 'Fácil',
               'diff-medio': recipe.difficulty === 'Medio',
               'diff-dificil': recipe.difficulty === 'Difícil'
-            }">{{ recipe.difficulty }}</span>
+            }">
+              <span class="dot-indicator"></span>
+              {{ recipe.difficulty }}
+            </span>
           </div>
-
-          <!-- Botón de Favorito Flotante -->
-          <button 
-            type="button" 
-            class="favorite-floating-btn" 
-            [class.active]="recipe.isFavorite"
-            (click)="toggleFavoriteForm()"
-            title="Marcar como favorita">
-            <svg class="heart-svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Contenido de la Tarjeta -->
-        <div class="card-body">
-          <h4 class="card-title">{{ recipe.name || 'Título de tu Receta' }}</h4>
-          <p class="card-desc">{{ recipe.description || 'Escribe una descripción corta para ver cómo encaja en la tarjeta.' }}</p>
-          
-          <!-- Metadatos Rápidos -->
-          <div class="card-meta">
-            <div class="meta-item">
-              <span class="meta-icon">⏱️</span>
-              <span class="meta-text">{{ recipe.prepTime }} min</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-icon">🍽️</span>
-              <span class="meta-text">{{ recipe.portions }} {{ recipe.portions === 1 ? 'porción' : 'porciones' }}</span>
-            </div>
-          </div>
-
-          <!-- Vista Previa de Ingredientes -->
-          <div class="preview-section-title" *ngIf="recipe.ingredients.length > 0">
-            Ingredientes ({{ recipe.ingredients.length }})
-          </div>
-          <ul class="preview-ingredients-list" *ngIf="recipe.ingredients.length > 0">
-            <li *ngFor="let ing of recipe.ingredients.slice(0, 3)">
-              <span class="check-bullet">✓</span> {{ ing }}
-            </li>
-            <li class="more-items" *ngIf="recipe.ingredients.length > 3">
-              Y {{ recipe.ingredients.length - 3 }} ingrediente(s) más...
-            </li>
-          </ul>
-
-          <!-- Vista Previa de Pasos -->
-          <div class="preview-section-title" *ngIf="recipe.steps.length > 0">
-            Pasos de preparación ({{ recipe.steps.length }})
-          </div>
-          <ol class="preview-steps-list" *ngIf="recipe.steps.length > 0">
-            <li *ngFor="let step of recipe.steps.slice(0, 2); let idx = index">
-              <span class="num-bullet">{{ idx + 1 }}.</span> {{ step }}
-            </li>
-            <li class="more-items" *ngIf="recipe.steps.length > 2">
-              Y {{ recipe.steps.length - 2 }} paso(s) más...
-            </li>
-          </ol>
         </div>
       </div>
+      
     </div>
   </div>
+
 </div>

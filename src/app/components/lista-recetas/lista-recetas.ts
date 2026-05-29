@@ -5,6 +5,7 @@ import { RecipeService, Recipe } from '../../services/recipe.service';
 
 @Component({
   selector: 'app-lista-recetas',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './lista-recetas.component.html',
   styleUrls: ['./lista-recetas.component.css']
@@ -14,59 +15,59 @@ export class ListaRecetasComponent implements OnInit {
   recetas: Recipe[] = [];
   recetasFiltradas: Recipe[] = [];
   terminoBusqueda: string = '';
+  esFavoritos: boolean = false;
 
   constructor(private recipeService: RecipeService, private router: Router) {}
 
   ngOnInit(): void {
-    this.recetas = this.recipeService.recipes();
-    if (this.router.url.includes('favoritos')) {
-      this.recetasFiltradas = this.recetas.filter(r => r.isFavorite);
-    } else {
-      this.recetasFiltradas = this.recetas;
-    }
+    this.esFavoritos = this.router.url.includes('favoritos');
+    this.recargarLista();
   }
 
-  buscarReceta(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.terminoBusqueda = input.value.toLowerCase();
-    const source = this.router.url.includes('favoritos')
+  /** Recarga la lista desde el servicio y aplica el filtro de búsqueda/favoritos */
+  private recargarLista(): void {
+    this.recetas = this.recipeService.recipes();
+    const fuente = this.esFavoritos
       ? this.recetas.filter(r => r.isFavorite)
       : this.recetas;
-    this.recetasFiltradas = source.filter(r =>
-      r.name.toLowerCase().includes(this.terminoBusqueda)
-    );
+    this.recetasFiltradas = this.terminoBusqueda
+      ? fuente.filter(r => r.name.toLowerCase().includes(this.terminoBusqueda))
+      : fuente;
   }
 
+  /** Evento (input) del buscador */
+  buscarReceta(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.terminoBusqueda = input.value.toLowerCase().trim();
+    this.recargarLista();
+  }
+
+  /** Alternar favorito con evento (click) */
   toggleFavorito(receta: Recipe): void {
     this.recipeService.toggleFavorite(receta.id);
-    this.recetas = this.recipeService.recipes();
-    if (this.router.url.includes('favoritos')) {
-      this.recetasFiltradas = this.recetas.filter(r => r.isFavorite);
-    } else {
-      this.recetasFiltradas = this.recetas.filter(r =>
-        r.name.toLowerCase().includes(this.terminoBusqueda)
-      );
-    }
+    this.recargarLista();
   }
 
+  /** Eliminar receta con confirmación */
   eliminarReceta(id: string): void {
     if (confirm('¿Estás seguro de que deseas eliminar esta receta?')) {
       this.recipeService.deleteRecipe(id);
-      this.recetas = this.recipeService.recipes();
-      const source = this.router.url.includes('favoritos')
-        ? this.recetas.filter(r => r.isFavorite)
-        : this.recetas;
-      this.recetasFiltradas = source.filter(r =>
-        r.name.toLowerCase().includes(this.terminoBusqueda)
-      );
+      this.recargarLista();
     }
   }
 
+  /** Navegar al formulario de edición */
   editarReceta(id: string): void {
     this.router.navigate(['/editar', id]);
   }
 
+  /** Ver detalle de receta */
   verDetalle(id: string): void {
     this.router.navigate(['/receta', id]);
+  }
+
+  /** Ir al formulario de agregar */
+  irAgregar(): void {
+    this.router.navigate(['/agregar']);
   }
 }
